@@ -11,6 +11,8 @@
 const SHA256 = require("crypto-js/sha256");
 const BlockClass = require("./block.js");
 const bitcoinMessage = require("bitcoinjs-message");
+const Block = require("bitcoinjs-lib/src/block");
+const MILISECONDS_FOR_FIVE_MIN = 300000;
 
 class Blockchain {
   /**
@@ -87,7 +89,16 @@ class Blockchain {
    * @param {*} address
    */
   requestMessageOwnershipVerification(address) {
-    return new Promise((resolve) => {});
+    return new Promise((resolve, reject) => {
+      try {
+        const addressString = `${address}:${new Date()
+          .getTime()
+          .toString()
+          .slice(0, -3)}:starRegistry`;
+        resolve(addressString);
+      } catch (e) {}
+      reject(e, "Failed to request ownership verification");
+    });
   }
 
   /**
@@ -109,7 +120,21 @@ class Blockchain {
    */
   submitStar(address, message, signature, star) {
     let self = this;
-    return new Promise(async (resolve, reject) => {});
+    return new Promise(async (resolve, reject) => {
+      const time = parseInt(message.split(":")[1]);
+      const currentTime = parseInt(
+        new Date().getTime().toString().slice(0, -3)
+      );
+      if (time + MILISECONDS_FOR_FIVE_MIN > currentTime) {
+        if (bitcoinMessage.verify(message, address, signature)) {
+          const block = new Block(star);
+          self._addBlock(block);
+          resolve(block);
+        }
+        reject("Invalid block");
+      }
+      reject("Time is more than 5 minutes.");
+    });
   }
 
   /**
@@ -120,7 +145,10 @@ class Blockchain {
    */
   getBlockByHash(hash) {
     let self = this;
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {
+      const found = self.chain.filter((block) => block.hash === hash)[0];
+      !found ? reject("Block Not Found") : resolve(found);
+    });
   }
 
   /**
@@ -149,7 +177,18 @@ class Blockchain {
   getStarsByWalletAddress(address) {
     let self = this;
     let stars = [];
-    return new Promise((resolve, reject) => {});
+    return new Promise((resolve, reject) => {
+      try {
+        this.chain.forEach((block) => {
+          const data = block.getBData();
+
+          data.owner && data.owner === address ? starts.push(data) : "";
+        });
+        resolve(stars);
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   /**
