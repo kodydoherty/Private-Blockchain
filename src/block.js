@@ -67,16 +67,17 @@ class Block {
 
     return new Promise((resolve, reject) => {
       try {
-        const data = this.data;
+        const data = self.body;
         // Decoding the data to retrieve the JSON representation of the object
         const decodedData = hex2ascii(data);
         // Parse the data to an object to be retrieve.
         const rawData = JSON.parse(decodedData);
+
         // Resolve with the data if the object isn't the Genesis block
         if (rawData.data === "Genesis Block") {
           resolve(null);
         } else {
-          resolve(rawData.data);
+          resolve(rawData);
         }
       } catch (e) {
         reject(e, "Failed to decode or parse data");
