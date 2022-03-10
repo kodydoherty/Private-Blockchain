@@ -45,7 +45,7 @@ class Block {
         const newHash = SHA256(JSON.stringify(self)).toString();
         // Compare if the auxiliary hash value is different from the calculated one.
         // Resolve true or false depending if it is valid or not.
-        resolve(currentHash === newhash);
+        resolve(currentHash === newHash);
       } catch (e) {
         reject(e, "Failed to validate");
       }

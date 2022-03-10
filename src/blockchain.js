@@ -76,12 +76,12 @@ class Blockchain {
         block.time = Date.now().toString();
         block.hash = SHA256(JSON.stringify(block)).toString();
         self.chain.push(block);
-        const errors = await validateChain();
+        const errors = await self.validateChain();
         if (errors.length < 1) {
           resolve(block);
           return;
         }
-        reject("Invalid Chain");
+        reject(errors, "Invalid Chain");
       } catch (e) {
         reject(e, "Failed to add block to chain");
       }
