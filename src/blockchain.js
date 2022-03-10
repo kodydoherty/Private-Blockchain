@@ -76,7 +76,7 @@ class Blockchain {
         block.time = Date.now().toString();
         block.hash = SHA256(JSON.stringify(block)).toString();
         self.chain.push(block);
-
+        validateChain();
         resolve(block);
       } catch (e) {
         reject(e, "Failed to add block to chain");
