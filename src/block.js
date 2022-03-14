@@ -40,12 +40,12 @@ class Block {
     return new Promise((resolve, reject) => {
       try {
         // Save in auxiliary variable the current block hash
-        const currentHash = self.hash;
+        const cloneBlock = { ...self, hash: null };
         // Recalculate the hash of the Block
-        const newHash = SHA256(JSON.stringify(self)).toString();
+        const newHash = SHA256(JSON.stringify(cloneBlock)).toString();
         // Compare if the auxiliary hash value is different from the calculated one.
         // Resolve true or false depending if it is valid or not.
-        resolve(currentHash === newHash);
+        resolve(self.hash === newHash);
       } catch (e) {
         reject(e, "Failed to validate");
       }

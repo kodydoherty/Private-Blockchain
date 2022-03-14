@@ -12,7 +12,7 @@ const SHA256 = require("crypto-js/sha256");
 const BlockClass = require("./block.js");
 const bitcoinMessage = require("bitcoinjs-message");
 const Block = require("bitcoinjs-lib/src/block");
-const MILISECONDS_FOR_FIVE_MIN = 300000;
+const MILISECONDS_FOR_FIVE_MIN = 300;
 
 class Blockchain {
   /**
@@ -36,8 +36,12 @@ class Blockchain {
    */
   async initializeChain() {
     if (this.height === -1) {
-      let block = new BlockClass.Block({ data: "Genesis Block" });
-      await this._addBlock(block);
+      try {
+        let block = new BlockClass.Block({ data: "Genesis Block" });
+        await this._addBlock(block);
+      } catch (e) {
+        console.log("Failed to add a new block", e);
+      }
     }
   }
 
@@ -138,8 +142,12 @@ class Blockchain {
         if (bitcoinMessage.verify(message, address, signature)) {
           // # 4
           const block = new BlockClass.Block({ owner: address, star });
-          self._addBlock(block); // # 5
-          resolve(block); // # 6
+          try {
+            self._addBlock(block); // # 5
+          } catch (e) {
+            console.log("Failed to add a new block", e);
+            reject("Failed to add a new block");
+          }
         }
         reject("Invalid block");
       }
@@ -156,7 +164,7 @@ class Blockchain {
   getBlockByHash(hash) {
     let self = this;
     return new Promise((resolve, reject) => {
-      const found = self.chain.filter((block) => block.hash === hash)[0];
+      const found = self.chain.find((block) => block.hash === hash);
       !found ? reject("Block Not Found") : resolve(found);
     });
   }
@@ -215,8 +223,8 @@ class Blockchain {
     return new Promise(async (resolve, reject) => {
       let prevBlock;
       try {
-        self.chain.forEach(async (block) => {
-          const valid = await block.validate();
+        for (const block in self.chain) {
+          const valid = block.validate();
           if (!valid) {
             errorLog.push(block);
           }
@@ -224,7 +232,7 @@ class Blockchain {
             errorLog.push(block);
           }
           prevBlock = block;
-        });
+        }
 
         resolve(errorLog);
       } catch (e) {
