@@ -223,7 +223,7 @@ class Blockchain {
     return new Promise(async (resolve, reject) => {
       let prevBlock;
       try {
-        for (const block in self.chain) {
+        for (const block of self.chain) {
           const valid = block.validate();
           if (!valid) {
             errorLog.push(block);
